@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface SendMessageViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, UITextViewDelegate>
+@interface SendMessageViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, NSURLConnectionDataDelegate, UIAlertViewDelegate>
 
 @property (strong, nonatomic) UITextView *text;
 @property (strong, nonatomic) UIButton *send;
@@ -17,6 +17,9 @@
 @property (strong, nonatomic) IBOutlet UITableView *tableView;
 @property (strong, nonatomic) IBOutlet UIView *loadingOverlay;
 @property (strong, nonatomic) IBOutlet UIActivityIndicatorView *activityIndicator; 
+@property (strong, nonatomic) NSMutableData *dataContainer;
+@property (strong, nonatomic) NSURLConnection *registerConnection;
+@property (strong, nonatomic) NSURLConnection *sendMessageConnection;
 
 -(IBAction)sendText:(id)sender;
 -(void)sendMessageWithText:(NSString*)text;

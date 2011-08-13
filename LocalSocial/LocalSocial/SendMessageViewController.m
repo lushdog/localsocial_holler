@@ -19,6 +19,10 @@
 @synthesize loadingOverlay = __loadingOverlay;
 @synthesize done = __done;
 @synthesize info = __info;
+@synthesize dataContainer = __dataContainer;
+@synthesize sendMessageConnection = __sendMessageConnection;
+@synthesize registerConnection = __registerConnection;
+
 
 #pragma mark - Table View Stuff
 
@@ -108,10 +112,12 @@
 -(void)sendMessageWithText:(NSString *)text
 {
     [self setLoadingViewVisible:YES];
-    //TODO: send message to UA
-    //TODO: implement alert sheet to alert if error
-    //TODO: remove loading screen when finished,even with error
-    //TODO: close app on success send?
+    NSURL *messageURL = [NSURL URLWithString:@"http://localsocial.appspot.com/message"];
+    NSMutableURLRequest *messageRequest = [NSMutableURLRequest requestWithURL:messageURL];
+    messageRequest.HTTPMethod = @"POST";
+    NSString *messageBody = @"POST Content.......";
+    messageRequest.HTTPBody = [messageBody dataUsingEncoding:NSUTF8StringEncoding];
+    self.sendMessageConnection = [[NSURLConnection alloc] initWithRequest:messageRequest delegate:self];
 }
 
 -(void)setLoadingViewVisible:(BOOL)isVisible
@@ -147,6 +153,68 @@
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.info];
 }
 
+#pragma mark - URL Connection Stuff
+
+- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
+{
+    self.dataContainer.length = 0;
+    
+    if ([response respondsToSelector:@selector(statusCode)])
+    {
+        int statusCode = [((NSHTTPURLResponse *)response) statusCode];
+        if (statusCode >= 400)
+        {
+            [connection cancel];  // stop connecting; no more delegate messages
+            NSDictionary *errorInfo
+            = [NSDictionary dictionaryWithObject:[NSString stringWithFormat:
+                                                  NSLocalizedString(@"Server returned status code %d",@""),
+                                                  statusCode]
+                                          forKey:NSLocalizedDescriptionKey];
+            
+            NSString *errorMsg;
+            if (connection == self.registerConnection)
+                errorMsg = @"Error With Register Server";
+            else
+                errorMsg = @"Error With Intermediate Push Server";
+            
+            NSError *statusError
+            = [NSError errorWithDomain:errorMsg
+                                  code:statusCode
+                              userInfo:errorInfo];
+            [self connection:connection didFailWithError:statusError];
+        }
+    }
+}
+    
+- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
+{
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:error.domain message:[error.userInfo objectForKey:NSLocalizedDescriptionKey] delegate:self cancelButtonTitle:@"Continue" otherButtonTitles:nil];
+    [alert show];
+    [self setLoadingViewVisible:NO];
+}
+        
+- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
+{
+    [self.dataContainer appendData:data];
+}
+
+    
+- (void)connectionDidFinishLoading:(NSURLConnection *)connection;
+{
+    if (connection == self.registerConnection)
+    {}
+    
+    if (connection == self.sendMessageConnection)
+    {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"Message sent" delegate:self cancelButtonTitle:@"Continue" otherButtonTitles:nil];
+        [alert show];
+    }
+    
+    [self setLoadingViewVisible:NO];
+}
+    
+
+
 #pragma mark - View lifecycle
 
 - (void)didReceiveMemoryWarning
@@ -169,6 +237,13 @@
     self.done.frame = CGRectMake(0, 0, 60, 20);
     [self.done setTitle:@"Done" forState:UIControlStateNormal];
     [self.done addTarget:self action:@selector(closeKeyboard:) forControlEvents:UIControlEventTouchUpInside];
+    
+    NSURL *registerURL = [NSURL URLWithString:@"http://localsocial.appspot.com/register"];
+    NSMutableURLRequest *registerRequest = [NSMutableURLRequest requestWithURL:registerURL];
+    registerRequest.HTTPMethod = @"PUT";
+    NSString *registerBody = @"PUT Content.......";
+    registerRequest.HTTPBody = [registerBody dataUsingEncoding:NSUTF8StringEncoding];
+    self.registerConnection = [[NSURLConnection alloc] initWithRequest:registerRequest delegate:self];
 }
 
 - (void)viewDidUnload
@@ -197,6 +272,7 @@
 {
 	[super viewDidDisappear:animated];
 }
+
 
 #pragma mark - Orientation Stuff
 
