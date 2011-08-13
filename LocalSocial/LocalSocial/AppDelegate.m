@@ -17,6 +17,8 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+    [[UIApplication sharedApplication] registerForRemoteNotificationTypes:UIRemoteNotificationTypeAlert | UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound];
+    
     // Override point for customization after application launch.
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     
@@ -26,6 +28,14 @@
     self.window.rootViewController = self.navigationController;
     [self.window makeKeyAndVisible];
     return YES;
+}
+
+- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken
+{
+    NSString *deviceTokenString = [[[[deviceToken description]
+                     stringByReplacingOccurrencesOfString: @"<" withString: @""]
+                    stringByReplacingOccurrencesOfString: @">" withString: @""]
+                   stringByReplacingOccurrencesOfString: @" " withString: @""];
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application
