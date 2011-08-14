@@ -35,11 +35,11 @@ class MainHandler(webapp.RequestHandler):
    		url = "https://go.urbanairship.com/api/device_tokens/" + uuid + "/"
    		authentication = base64.b64encode("iIFovCvgQEa_9Q4lMIQCKA:RgYrsOWYS3aeR93O4wu9NQ")
    		headers = {"Authorization" : "Basic " + authentication}
-   		response = urlfetch.fetch(url, payload=None, method=urlfetch.PUT, headers=headers, allow_truncated=False, follow_redirects=True, deadline=None, validate_certificate=None)
+   		response = urlfetch.fetch(url, payload=None, method=urlfetch.PUT, headers=headers, allow_truncated=False, follow_redirects=True, deadline=None, validate_certificate=True)
    		self.response.set_status(response.status_code)
    		self.response.out = StringIO.StringIO(response.content)
    		if int(response.status_code) > 400:
-   			logging.info("Push message to UA failed, URL = %s, STATUS CODE = %s, REASON = %s", url, response.status_code, response.content)    	
+   			logging.info("Registration to UA failed, URL = %s, STATUS CODE = %s, REASON = %s", url, response.status_code, response.content)    	
 
 def main():
     application = webapp.WSGIApplication([('/register', MainHandler)],

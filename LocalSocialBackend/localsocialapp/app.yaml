@@ -6,7 +6,9 @@ api_version: 1
 handlers:
 - url: /register
   script: register.py
+  secure: always
   
 - url: /message
   script: message.py
+  secure: always
   
