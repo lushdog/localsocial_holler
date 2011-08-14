@@ -1,0 +1,12 @@
+application: localsocialapp
+version: 1
+runtime: python
+api_version: 1
+
+handlers:
+- url: /register
+  script: register.py
+  
+- url: /message
+  script: message.py
+  

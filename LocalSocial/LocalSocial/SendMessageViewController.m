@@ -8,6 +8,7 @@
 
 #import "SendMessageViewController.h"
 #import "InfoViewController.h"
+#import "AppDelegate.h"
 #import <QuartzCore/QuartzCore.h>
 
 @implementation SendMessageViewController
@@ -238,10 +239,13 @@
     [self.done setTitle:@"Done" forState:UIControlStateNormal];
     [self.done addTarget:self action:@selector(closeKeyboard:) forControlEvents:UIControlEventTouchUpInside];
     
-    NSURL *registerURL = [NSURL URLWithString:@"http://localsocial.appspot.com/register"];
+    NSURL *registerURL = [NSURL URLWithString:@"http://localhost:8080/register"];
     NSMutableURLRequest *registerRequest = [NSMutableURLRequest requestWithURL:registerURL];
-    registerRequest.HTTPMethod = @"PUT";
-    NSString *registerBody = @"PUT Content.......";
+    registerRequest.HTTPMethod = @"POST";
+    
+    NSString *deviceToken = ((AppDelegate *)[[UIApplication sharedApplication] delegate]).deviceTokenString;
+    NSString *registerBody = [NSString stringWithFormat:@"version=1&uuid=%@",@"FE66489F304DC75B8D6E8200DFF8A456E8DAEACEC428B427E9518741C92C6660"];
+    
     registerRequest.HTTPBody = [registerBody dataUsingEncoding:NSUTF8StringEncoding];
     self.registerConnection = [[NSURLConnection alloc] initWithRequest:registerRequest delegate:self];
 }

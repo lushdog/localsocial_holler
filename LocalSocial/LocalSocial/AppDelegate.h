@@ -17,5 +17,6 @@
 
 @property (strong, nonatomic) UINavigationController *navigationController;
 @property (strong, nonatomic) SendMessageViewController *sendMessageViewController;
+@property (strong, nonatomic) NSString *deviceTokenString;
 
 @end

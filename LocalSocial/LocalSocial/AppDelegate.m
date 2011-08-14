@@ -14,6 +14,7 @@
 @synthesize window = _window;
 @synthesize navigationController = __rootViewController;
 @synthesize sendMessageViewController = __sendMessageViewController;
+@synthesize deviceTokenString = __deviceTokenString;
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
@@ -32,10 +33,10 @@
 
 - (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken
 {
-    NSString *deviceTokenString = [[[[deviceToken description]
-                     stringByReplacingOccurrencesOfString: @"<" withString: @""]
-                    stringByReplacingOccurrencesOfString: @">" withString: @""]
-                   stringByReplacingOccurrencesOfString: @" " withString: @""];
+    self.deviceTokenString = [[[[deviceToken description]
+                                   stringByReplacingOccurrencesOfString: @"<" withString: @""]
+                                  stringByReplacingOccurrencesOfString: @">" withString: @""]
+                                 stringByReplacingOccurrencesOfString: @" " withString: @""];
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application
