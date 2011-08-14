@@ -113,10 +113,15 @@
 -(void)sendMessageWithText:(NSString *)text
 {
     [self setLoadingViewVisible:YES];
-    NSURL *messageURL = [NSURL URLWithString:@"http://localsocial.appspot.com/message"];
+    //TOOD: development GAE server change to live
+    NSURL *messageURL = [NSURL URLWithString:@"https://localsocialapp.appspot.com/message"];
     NSMutableURLRequest *messageRequest = [NSMutableURLRequest requestWithURL:messageURL];
     messageRequest.HTTPMethod = @"POST";
-    NSString *messageBody = @"POST Content.......";
+    
+    //TODO: use location api to get current location
+    NSString *location = @"";
+    NSString *messageBody = [NSString stringWithFormat:@"version=1&msg=%@&location=%@",text, location];
+    
     messageRequest.HTTPBody = [messageBody dataUsingEncoding:NSUTF8StringEncoding];
     self.sendMessageConnection = [[NSURLConnection alloc] initWithRequest:messageRequest delegate:self];
 }
@@ -239,10 +244,12 @@
     [self.done setTitle:@"Done" forState:UIControlStateNormal];
     [self.done addTarget:self action:@selector(closeKeyboard:) forControlEvents:UIControlEventTouchUpInside];
     
+    //TODO: debug url
     NSURL *registerURL = [NSURL URLWithString:@"http://localhost:8080/register"];
     NSMutableURLRequest *registerRequest = [NSMutableURLRequest requestWithURL:registerURL];
     registerRequest.HTTPMethod = @"POST";
     
+    //TODO: this is for debug purposes in simulator
     NSString *deviceToken = ((AppDelegate *)[[UIApplication sharedApplication] delegate]).deviceTokenString;
     NSString *registerBody = [NSString stringWithFormat:@"version=1&uuid=%@",@"FE66489F304DC75B8D6E8200DFF8A456E8DAEACEC428B427E9518741C92C6660"];
     

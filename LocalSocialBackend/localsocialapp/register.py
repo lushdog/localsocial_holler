@@ -30,7 +30,6 @@ class MainHandler(webapp.RequestHandler):
    
    def post(self):
    
-   		logging.info("Start Register")
    		uuid = self.request.get("uuid")
    		url = "https://go.urbanairship.com/api/device_tokens/" + uuid + "/"
    		authentication = base64.b64encode("iIFovCvgQEa_9Q4lMIQCKA:RgYrsOWYS3aeR93O4wu9NQ")
