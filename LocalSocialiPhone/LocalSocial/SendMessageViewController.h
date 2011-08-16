@@ -7,8 +7,9 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <CoreLocation/CoreLocation.h>
 
-@interface SendMessageViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, NSURLConnectionDataDelegate, UIAlertViewDelegate>
+@interface SendMessageViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, NSURLConnectionDataDelegate, UIAlertViewDelegate, CLLocationManagerDelegate>
 
 @property (strong, nonatomic) UITextView *text;
 @property (strong, nonatomic) UIButton *send;
@@ -20,6 +21,8 @@
 @property (strong, nonatomic) NSMutableData *dataContainer;
 @property (strong, nonatomic) NSURLConnection *registerConnection;
 @property (strong, nonatomic) NSURLConnection *sendMessageConnection;
+@property (strong, nonatomic) CLLocationManager *locationManager;
+@property (strong, nonatomic) CLLocation *currentLocation;
 
 -(IBAction)sendText:(id)sender;
 -(void)sendMessageWithText:(NSString*)text;

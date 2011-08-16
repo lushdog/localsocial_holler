@@ -38,7 +38,7 @@
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view from its nib.
-    self.title = @"What is Local Social?";
+    self.title = @"What is Holler?";
     self.navigationItem.hidesBackButton=YES;
     
     UIButton *button = [UIButton buttonWithType:UIButtonTypeRoundedRect];

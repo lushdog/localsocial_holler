@@ -10,6 +10,7 @@
 #import "InfoViewController.h"
 #import "AppDelegate.h"
 #import <QuartzCore/QuartzCore.h>
+#import <CoreLocation/CoreLocation.h>
 
 @implementation SendMessageViewController
 
@@ -23,9 +24,14 @@
 @synthesize dataContainer = __dataContainer;
 @synthesize sendMessageConnection = __sendMessageConnection;
 @synthesize registerConnection = __registerConnection;
+@synthesize locationManager = __locationManager;
+@synthesize currentLocation = __currentLocation;
+
 
 
 #pragma mark - Table View Stuff
+
+
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section;
 {
@@ -69,7 +75,7 @@
             
             self.text = [[UITextView alloc] initWithFrame:CGRectMake(20, 10, 280, 130)];
             self.text.delegate = self;
-            self.text.text = @"lalalalalala";
+            self.text.text = @"";
             self.text.editable = YES;
             self.text.font = [UIFont systemFontOfSize:18.0];
             self.text.backgroundColor = [UIColor whiteColor];
@@ -89,7 +95,7 @@
             
             self.send = [UIButton buttonWithType:UIButtonTypeRoundedRect];
             self.send.frame = CGRectMake(85, 20, 140, 40);
-            [self.send setTitle:@"Broadcast 1KM" forState:UIControlStateNormal];
+            [self.send setTitle:@"Holler!" forState:UIControlStateNormal];
             [self.send addTarget:self action:@selector(sendText:) forControlEvents:UIControlEventTouchUpInside];
             [cell addSubview: self.send]; 
  
@@ -102,28 +108,17 @@
     return cell;
 }
 
+
+
 #pragma mark - Button Stuff
+
+
 
 -(IBAction)sendText:(id)sender
 {
     [self.text resignFirstResponder];
+     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.info];
     [self sendMessageWithText:self.text.text];
-}
-
--(void)sendMessageWithText:(NSString *)text
-{
-    [self setLoadingViewVisible:YES];
-    //TOOD: development GAE server change to live
-    NSURL *messageURL = [NSURL URLWithString:@"https://localsocialapp.appspot.com/message"];
-    NSMutableURLRequest *messageRequest = [NSMutableURLRequest requestWithURL:messageURL];
-    messageRequest.HTTPMethod = @"POST";
-    
-    //TODO: use location api to get current location
-    NSString *location = @"";
-    NSString *messageBody = [NSString stringWithFormat:@"version=1&msg=%@&location=%@",text, location];
-    
-    messageRequest.HTTPBody = [messageBody dataUsingEncoding:NSUTF8StringEncoding];
-    self.sendMessageConnection = [[NSURLConnection alloc] initWithRequest:messageRequest delegate:self];
 }
 
 -(void)setLoadingViewVisible:(BOOL)isVisible
@@ -146,7 +141,11 @@
     [self.navigationController pushViewController:infoViewController animated:YES];
 }
 
+
+
 #pragma mark - TextView Stuff
+
+
 
 - (void)textViewDidBeginEditing:(UITextView *)textView
 {   
@@ -159,7 +158,35 @@
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.info];
 }
 
+
+
 #pragma mark - URL Connection Stuff
+
+
+
+-(void)sendMessageWithText:(NSString *)text
+{
+    if (self.currentLocation == nil)
+    {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"Holler fail - cannot determine current location." delegate:self cancelButtonTitle:@"Continue" otherButtonTitles:nil];
+        [alert show];
+        return;
+    }
+    
+    [self setLoadingViewVisible:YES];
+    
+    //DEBUG: Change to debug server
+    NSURL *messageURL = [NSURL URLWithString:@"https://localsocialapp.appspot.com/message"];
+    //NSURL *messageURL = [NSURL URLWithString:@"https://localhost:8080/message"];
+    
+    NSMutableURLRequest *messageRequest = [NSMutableURLRequest requestWithURL:messageURL];
+    messageRequest.HTTPMethod = @"POST";
+    
+    NSString *messageBody = [NSString stringWithFormat:@"version=1&msg=%@&location=%f,%f",text, self.currentLocation.coordinate.latitude, self.currentLocation.coordinate.longitude];
+    
+    messageRequest.HTTPBody = [messageBody dataUsingEncoding:NSUTF8StringEncoding];
+    self.sendMessageConnection = [[NSURLConnection alloc] initWithRequest:messageRequest delegate:self];
+}
 
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
 {
@@ -179,9 +206,9 @@
             
             NSString *errorMsg;
             if (connection == self.registerConnection)
-                errorMsg = @"Error With Register Server";
+                errorMsg = @"Error with register server.";
             else
-                errorMsg = @"Error With Intermediate Push Server";
+                errorMsg = @"Error with intermediate push server.";
             
             NSError *statusError
             = [NSError errorWithDomain:errorMsg
@@ -212,7 +239,7 @@
     
     if (connection == self.sendMessageConnection)
     {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"Message sent" delegate:self cancelButtonTitle:@"Continue" otherButtonTitles:nil];
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"Holler sent" delegate:self cancelButtonTitle:@"Continue" otherButtonTitles:nil];
         [alert show];
     }
     
@@ -221,7 +248,20 @@
     
 
 
+#pragma mark - Location stuff
+
+- (void)locationManager:(CLLocationManager *)manager
+	didUpdateToLocation:(CLLocation *)newLocation
+           fromLocation:(CLLocation *)oldLocation;
+{
+        self.currentLocation = newLocation;
+}
+
+
+
 #pragma mark - View lifecycle
+
+
 
 - (void)didReceiveMemoryWarning
 {
@@ -232,26 +272,38 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-	// Do any additional setup after loading the view, typically from a nib.
+	
+    //start location events
+    if (nil == self.locationManager)
+        self.locationManager = [[CLLocationManager alloc] init];
     
-    self.title = @"Local Social";
+    self.locationManager.delegate = self;
+    [self.locationManager startMonitoringSignificantLocationChanges];
+    
+    //send button
+    self.title = @"Send Holler";
     self.info = [UIButton buttonWithType:UIButtonTypeInfoLight];
     [self.info addTarget:self action:@selector(showInfo:) forControlEvents:UIControlEventTouchUpInside];
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.info];
     
+    //close info page button
     self.done = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     self.done.frame = CGRectMake(0, 0, 60, 20);
     [self.done setTitle:@"Done" forState:UIControlStateNormal];
     [self.done addTarget:self action:@selector(closeKeyboard:) forControlEvents:UIControlEventTouchUpInside];
     
-    //TODO: debug url
-    NSURL *registerURL = [NSURL URLWithString:@"http://localhost:8080/register"];
+    //DEBUG: Debug url
+    NSURL *registerURL = [NSURL URLWithString:@"https://localsocialapp.appspot.com/register"];
+    //NSURL *registerURL = [NSURL URLWithString:@"https://localhost:8080/register"];
+    
     NSMutableURLRequest *registerRequest = [NSMutableURLRequest requestWithURL:registerURL];
     registerRequest.HTTPMethod = @"POST";
     
-    //TODO: this is for debug purposes in simulator
-    NSString *deviceToken = ((AppDelegate *)[[UIApplication sharedApplication] delegate]).deviceTokenString;
-    NSString *registerBody = [NSString stringWithFormat:@"version=1&uuid=%@",@"FE66489F304DC75B8D6E8200DFF8A456E8DAEACEC428B427E9518741C92C6660"];
+    //DEBUG: This is for debug purposes in simulator
+    NSString *deviceToken = @"FE66489F304DC75B8D6E8200DFF8A456E8DAEACEC428B427E9518741C92C6660";
+    //NSString *deviceToken = ((AppDelegate *)[[UIApplication sharedApplication] delegate]).deviceTokenString;
+    
+    NSString *registerBody = [NSString stringWithFormat:@"version=1&uuid=%@", deviceToken];
     
     registerRequest.HTTPBody = [registerBody dataUsingEncoding:NSUTF8StringEncoding];
     self.registerConnection = [[NSURLConnection alloc] initWithRequest:registerRequest delegate:self];
@@ -285,7 +337,10 @@
 }
 
 
+
 #pragma mark - Orientation Stuff
+
+
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
