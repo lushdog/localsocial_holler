@@ -23,9 +23,11 @@
 @property (strong, nonatomic) NSURLConnection *sendMessageConnection;
 @property (strong, nonatomic) CLLocationManager *locationManager;
 @property (strong, nonatomic) CLLocation *currentLocation;
+@property (strong, nonatomic) NSString *senderToken;
 
 -(IBAction)sendText:(id)sender;
 -(void)sendMessageWithText:(NSString*)text;
 -(void)setLoadingViewVisible:(BOOL)isVisible;
+-(void)registerToken;
 
 @end

@@ -26,7 +26,7 @@
 @synthesize registerConnection = __registerConnection;
 @synthesize locationManager = __locationManager;
 @synthesize currentLocation = __currentLocation;
-
+@synthesize senderToken = __senderToken;
 
 
 #pragma mark - Table View Stuff
@@ -81,8 +81,9 @@
             self.text.backgroundColor = [UIColor whiteColor];
             self.text.userInteractionEnabled = YES;
             self.text.textColor = [UIColor blackColor];
-            self.text.keyboardType = UIKeyboardTypeTwitter;
-            self.text.returnKeyType = UIReturnKeyDefault;
+            self.text.keyboardType = UIKeyboardTypeEmailAddress;
+            self.text.returnKeyType = UIReturnKeyDone;
+            self.text.autocorrectionType = UITextAutocorrectionTypeNo;
             self.text.enablesReturnKeyAutomatically = YES;
             self.text.layer.borderColor = [UIColor grayColor].CGColor;
             self.text.layer.borderWidth = 0.5;
@@ -116,9 +117,15 @@
 
 -(IBAction)sendText:(id)sender
 {
+    if (self.text.text == @"") return;
+    
     [self.text resignFirstResponder];
      self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.info];
-    [self sendMessageWithText:self.text.text];
+    
+    NSString *cleanedText = [self.text.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    cleanedText = [cleanedText stringByReplacingOccurrencesOfString:@"\n" withString:@""];
+    
+    [self sendMessageWithText:cleanedText];
 }
 
 -(void)setLoadingViewVisible:(BOOL)isVisible
@@ -162,7 +169,27 @@
 
 #pragma mark - URL Connection Stuff
 
+-(void)registerToken
+{
+    //DEBUG: Debug url
+    NSURL *registerURL = [NSURL URLWithString:@"https://localsocialapp.appspot.com/register"];
+    //NSURL *registerURL = [NSURL URLWithString:@"https://localhost:8080/register"];
+    
+    NSMutableURLRequest *registerRequest = [NSMutableURLRequest requestWithURL:registerURL];
+    registerRequest.HTTPMethod = @"POST";
+    
+    //DEBUG: This is for debug purposes in simulator
+    //NSString *deviceToken = @"FE66489F304DC75B8D6E8200DFF8A456E8DAEACEC428B427E9518741C92C6660";
+    
+    AppDelegate *delegate =  (AppDelegate*)[[UIApplication sharedApplication] delegate];
+    NSString *deviceToken = [delegate deviceTokenString];
+    self.senderToken = deviceToken; //TODO: token is in appdelegate and here
+    NSString *registerBody = [NSString stringWithFormat:@"version=1&token=%@", deviceToken];
+    
+    registerRequest.HTTPBody = [registerBody dataUsingEncoding:NSUTF8StringEncoding];
+    self.registerConnection = [[NSURLConnection alloc] initWithRequest:registerRequest delegate:self];
 
+}
 
 -(void)sendMessageWithText:(NSString *)text
 {
@@ -182,7 +209,7 @@
     NSMutableURLRequest *messageRequest = [NSMutableURLRequest requestWithURL:messageURL];
     messageRequest.HTTPMethod = @"POST";
     
-    NSString *messageBody = [NSString stringWithFormat:@"version=1&msg=%@&location=%f,%f",text, self.currentLocation.coordinate.latitude, self.currentLocation.coordinate.longitude];
+    NSString *messageBody = [NSString stringWithFormat:@"version=1&msg=%@&location=%f,%f&token=%@",text, self.currentLocation.coordinate.latitude, self.currentLocation.coordinate.longitude, self.senderToken];
     
     messageRequest.HTTPBody = [messageBody dataUsingEncoding:NSUTF8StringEncoding];
     self.sendMessageConnection = [[NSURLConnection alloc] initWithRequest:messageRequest delegate:self];
@@ -239,7 +266,7 @@
     
     if (connection == self.sendMessageConnection)
     {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"Holler sent" delegate:self cancelButtonTitle:@"Continue" otherButtonTitles:nil];
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"Holler Success" delegate:self cancelButtonTitle:@"Continue" otherButtonTitles:nil];
         [alert show];
     }
     
@@ -273,12 +300,21 @@
 {
     [super viewDidLoad];
 	
+     
+    if (![CLLocationManager locationServicesEnabled]) 
+    {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"Location Services disabled.  This app requires Location Services to be enabled to function correctly." delegate:self cancelButtonTitle:@"Continue" otherButtonTitles:nil];
+        [alert show];
+    }
+    
     //start location events
     if (nil == self.locationManager)
         self.locationManager = [[CLLocationManager alloc] init];
     
     self.locationManager.delegate = self;
-    [self.locationManager startMonitoringSignificantLocationChanges];
+    self.locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters;
+    self.locationManager.distanceFilter = 100;
+    [self.locationManager startUpdatingLocation];
     
     //send button
     self.title = @"Send Holler";
@@ -292,21 +328,6 @@
     [self.done setTitle:@"Done" forState:UIControlStateNormal];
     [self.done addTarget:self action:@selector(closeKeyboard:) forControlEvents:UIControlEventTouchUpInside];
     
-    //DEBUG: Debug url
-    NSURL *registerURL = [NSURL URLWithString:@"https://localsocialapp.appspot.com/register"];
-    //NSURL *registerURL = [NSURL URLWithString:@"https://localhost:8080/register"];
-    
-    NSMutableURLRequest *registerRequest = [NSMutableURLRequest requestWithURL:registerURL];
-    registerRequest.HTTPMethod = @"POST";
-    
-    //DEBUG: This is for debug purposes in simulator
-    NSString *deviceToken = @"FE66489F304DC75B8D6E8200DFF8A456E8DAEACEC428B427E9518741C92C6660";
-    //NSString *deviceToken = ((AppDelegate *)[[UIApplication sharedApplication] delegate]).deviceTokenString;
-    
-    NSString *registerBody = [NSString stringWithFormat:@"version=1&uuid=%@", deviceToken];
-    
-    registerRequest.HTTPBody = [registerBody dataUsingEncoding:NSUTF8StringEncoding];
-    self.registerConnection = [[NSURLConnection alloc] initWithRequest:registerRequest delegate:self];
 }
 
 - (void)viewDidUnload

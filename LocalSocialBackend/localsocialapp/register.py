@@ -21,17 +21,16 @@ import httplib
 import StringIO
 import base64
 import logging
-
-#version
-#uuid to register
+import cgi
 
 
 class MainHandler(webapp.RequestHandler):
    
    def post(self):
    
-   		uuid = self.request.get("uuid")
-   		url = "https://go.urbanairship.com/api/device_tokens/" + uuid + "/"
+   		token = cgi.escape(self.request.get("token"))
+   		
+   		url = "https://go.urbanairship.com/api/device_tokens/" + token + "/"
    		authentication = base64.b64encode("iIFovCvgQEa_9Q4lMIQCKA:RgYrsOWYS3aeR93O4wu9NQ")
    		headers = {"Authorization" : "Basic " + authentication}
    		response = urlfetch.fetch(url, payload=None, method=urlfetch.PUT, headers=headers, allow_truncated=False, follow_redirects=True, deadline=None, validate_certificate=True)
