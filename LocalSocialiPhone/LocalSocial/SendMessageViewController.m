@@ -19,7 +19,7 @@
 @synthesize tableView = __tableView;
 @synthesize activityIndicator = __activityIndicator;
 @synthesize loadingOverlay = __loadingOverlay;
-@synthesize done = __done;
+//@synthesize done = __done;
 @synthesize info = __info;
 @synthesize dataContainer = __dataContainer;
 @synthesize sendMessageConnection = __sendMessageConnection;
@@ -43,7 +43,7 @@
     switch (indexPath.row) {
             
         case 0:
-            return 150;
+            return 145;
             break;
         case 1:
             return 80;
@@ -63,6 +63,7 @@
     {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentifier];
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        cell.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         
         for (int i = 0; i < [[cell subviews] count]; i++) {
             [[[cell subviews] objectAtIndex:i] removeFromSuperview];
@@ -73,33 +74,33 @@
         
         case 0:
             
-            self.text = [[UITextView alloc] initWithFrame:CGRectMake(20, 10, 280, 130)];
+            self.text = [[UITextView alloc] initWithFrame:CGRectMake(27, 15, 265, 115)];
             self.text.delegate = self;
             self.text.text = @"";
             self.text.editable = YES;
-            self.text.font = [UIFont systemFontOfSize:18.0];
+            self.text.scrollEnabled = NO;
+            self.text.font = [UIFont systemFontOfSize:16.0];
             self.text.backgroundColor = [UIColor whiteColor];
             self.text.userInteractionEnabled = YES;
             self.text.textColor = [UIColor blackColor];
             self.text.keyboardType = UIKeyboardTypeEmailAddress;
             self.text.returnKeyType = UIReturnKeyDone;
             self.text.autocorrectionType = UITextAutocorrectionTypeNo;
-            self.text.enablesReturnKeyAutomatically = YES;
+            self.text.enablesReturnKeyAutomatically = NO;
             self.text.layer.borderColor = [UIColor grayColor].CGColor;
             self.text.layer.borderWidth = 0.5;
-            
+            self.text.autoresizingMask = UIViewAutoresizingFlexibleWidth;
             [cell addSubview:self.text];
-            
             break;
         
         case 1:
             
             self.send = [UIButton buttonWithType:UIButtonTypeRoundedRect];
             self.send.frame = CGRectMake(85, 20, 140, 40);
+            self.send.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
             [self.send setTitle:@"Holler!" forState:UIControlStateNormal];
             [self.send addTarget:self action:@selector(sendText:) forControlEvents:UIControlEventTouchUpInside];
             [cell addSubview: self.send]; 
- 
             break;
 
         default:
@@ -153,16 +154,31 @@
 #pragma mark - TextView Stuff
 
 
-
+/*
 - (void)textViewDidBeginEditing:(UITextView *)textView
 {   
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.done];
 }
+ */
 
 -(void)closeKeyboard:(id)sender
 {
     [self.text resignFirstResponder];
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.info];
+}
+
+- (void)textViewDidChange:(UITextView *)textView
+{
+    if (!NSEqualRanges([textView.text rangeOfString:@"\n"], NSMakeRange(NSNotFound, 0)))
+    {
+        textView.text = [textView.text stringByReplacingOccurrencesOfString:@"\n" withString:@""];
+        [textView resignFirstResponder];
+    }
+    
+    if (textView.text.length > 100)
+    {
+        textView.text = [textView.text substringWithRange:NSMakeRange(0, 100)];
+    }
 }
 
 
@@ -195,7 +211,7 @@
 {
     if (self.currentLocation == nil)
     {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"Holler fail - cannot determine current location." delegate:self cancelButtonTitle:@"Continue" otherButtonTitles:nil];
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"Holler failed. Cannot determine current location." delegate:self cancelButtonTitle:@"Continue" otherButtonTitles:nil];
         [alert show];
         return;
     }
@@ -299,7 +315,7 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-	
+	self.title = @"Send Holler";
      
     if (![CLLocationManager locationServicesEnabled]) 
     {
@@ -316,18 +332,18 @@
     self.locationManager.distanceFilter = 100;
     [self.locationManager startUpdatingLocation];
     
-    //send button
-    self.title = @"Send Holler";
+    //info button
     self.info = [UIButton buttonWithType:UIButtonTypeInfoLight];
     [self.info addTarget:self action:@selector(showInfo:) forControlEvents:UIControlEventTouchUpInside];
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.info];
     
-    //close info page button
+    //close keyboard button
+    /*
     self.done = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     self.done.frame = CGRectMake(0, 0, 60, 20);
     [self.done setTitle:@"Done" forState:UIControlStateNormal];
     [self.done addTarget:self action:@selector(closeKeyboard:) forControlEvents:UIControlEventTouchUpInside];
-    
+    */
 }
 
 - (void)viewDidUnload

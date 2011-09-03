@@ -9,10 +9,7 @@
 #import "AppDelegate.h"
 #import "SendMessageViewController.h"
 
-//TODO: send sender token to message api
-//      trim whitespace from messages and maybe even carriage returns and tabs etc, client-side
-//      sanitize post body server-side
-//      for short-term, have send message send token of sender so they get their message
+//TODO: 
 //      limit characters to max amount TBD and possibly stop certain key presses
 //      handle rotate
 //      done button on textview keyboard putting /n is dumb

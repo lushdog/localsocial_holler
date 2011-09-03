@@ -33,7 +33,6 @@ class MainHandler(webapp.RequestHandler):
    		location = cgi.escape(self.request.get("location"))
    		logging.info(location);
    		
-   		
    		url = "https://go.urbanairship.com/api/push/"
    		authentication = base64.b64encode("iIFovCvgQEa_9Q4lMIQCKA:mfi4p62CRjW1halaJ_Ur4A")
    		headers = {"Authorization" : "Basic " + authentication, "Content-Type" : "application/json"}
@@ -65,9 +64,7 @@ class MainHandler(webapp.RequestHandler):
 		#					}\
 		#			}"
 		
-		
 		#todo: not device tokens but location area as per new UA location api
-		
 		#until geolocation is in we'll just send back to user
    		
    		token = cgi.escape(self.request.get("token"))

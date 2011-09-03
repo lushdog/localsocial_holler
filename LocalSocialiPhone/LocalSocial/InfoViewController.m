@@ -42,7 +42,7 @@
     self.navigationItem.hidesBackButton=YES;
     
     UIButton *button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-    button.frame = CGRectMake(0, 0, 60, 20);
+    button.frame = CGRectMake(0, 0, 60, 30);
     [button setTitle:@"Close" forState:UIControlStateNormal];
     [button addTarget:self action:@selector(closeInfo) forControlEvents:UIControlEventTouchUpInside];
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:button];

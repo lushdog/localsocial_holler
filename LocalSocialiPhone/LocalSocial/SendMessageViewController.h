@@ -13,7 +13,7 @@
 
 @property (strong, nonatomic) UITextView *text;
 @property (strong, nonatomic) UIButton *send;
-@property (strong, nonatomic) UIButton *done;
+//@property (strong, nonatomic) UIButton *done;
 @property (strong, nonatomic) UIButton *info;
 @property (strong, nonatomic) IBOutlet UITableView *tableView;
 @property (strong, nonatomic) IBOutlet UIView *loadingOverlay;
