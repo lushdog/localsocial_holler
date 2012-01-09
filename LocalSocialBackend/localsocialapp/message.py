@@ -17,22 +17,26 @@
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import util
 from google.appengine.api import urlfetch
+from google.appengine.ext import db
 import httplib
 import StringIO
 import base64
 import logging
 import cgi
 
+class Message(db.Model):
+   		location = db.GeoPtProperty(required=True)
+   		content = db.StringProperty(required=True, multiline=False)
+   		timestamp = db.DateTimeProperty(required=True, auto_now_add=True)
+
 class MainHandler(webapp.RequestHandler):
-   
-   def post(self):
-   
-   		logging.info("Start Message")
-   		msg = cgi.escape(self.request.get("msg"))
-   		logging.info(msg);
-   		location = cgi.escape(self.request.get("location"))
-   		logging.info(location);
    		
+   def storeMessage(self, location, content):
+   		message = Message(location=location, content=unicode(content))
+   		message.put()
+   		
+
+   def pushMessage(self, location, content, token):
    		url = "https://go.urbanairship.com/api/push/"
    		authentication = base64.b64encode("iIFovCvgQEa_9Q4lMIQCKA:mfi4p62CRjW1halaJ_Ur4A")
    		headers = {"Authorization" : "Basic " + authentication, "Content-Type" : "application/json"}
@@ -67,18 +71,38 @@ class MainHandler(webapp.RequestHandler):
 		#todo: not device tokens but location area as per new UA location api
 		#until geolocation is in we'll just send back to user
    		
-   		token = cgi.escape(self.request.get("token"))
-   		
-		postBody = "{\"device_tokens\": [\"%(token)s\"],\"aps\": {\"alert\": \"%(message)s\",\"sound\": \"default\"}}" % {"token":token,"message":msg}
+   		postBody = "{\"device_tokens\": [\"%(token)s\"],\"aps\": {\"alert\": \"%(message)s\",\"sound\": \"default\"}}" % {"token":token,"message":content}
 		#postBody = "{\"aps\": {\"alert\": \"Hello from Urban Airship!\"}, \"device_tokens\": [\"4738D84B0740F2E219587D2042C9955A218F6ABECB9A5AE7FC1C7CA10DE76DAB\"]}"
 																								
 		response = urlfetch.fetch(url, payload=postBody, method=urlfetch.POST, headers=headers, allow_truncated=False, follow_redirects=True, deadline=None, validate_certificate=True)
    		self.response.set_status(response.status_code)
    		self.response.out = StringIO.StringIO(response.content)
-   		logging.info(postBody);
+   		#logging.info(postBody);
    		if int(response.status_code) >= 400:
    			logging.info("Push message to UA failed, URL = %s, BODY = %s, STATUS CODE = %s, REASON = %s", url, postBody, response.status_code, response.content)    	
 
+   
+   def post(self):
+   
+   		msg = cgi.escape(self.request.get("msg"))
+   		location = cgi.escape(self.request.get("location"))
+   		latitude = location.split(',')[0]
+   		longitude = location.split(',')[1]
+   		geopt = db.GeoPt(latitude,longitude)
+   		token = cgi.escape(self.request.get("token"))
+   		
+   		logging.info("Starting message...")
+   		logging.info(msg);
+   		logging.info(geopt);
+   		logging.info(token);
+   		
+   		logging.info("Storing message...")
+   		self.storeMessage(location, msg)
+   		
+   		logging.info("Pushing message...")
+   		self.pushMessage(location, msg, token)
+   		
+   		
 def main():
     application = webapp.WSGIApplication([('/message', MainHandler)],
                                          debug=True)

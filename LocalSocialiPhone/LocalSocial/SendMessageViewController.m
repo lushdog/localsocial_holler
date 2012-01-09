@@ -188,18 +188,21 @@
 -(void)registerToken
 {
     //DEBUG: Debug url
-    NSURL *registerURL = [NSURL URLWithString:@"https://localsocialapp.appspot.com/register"];
-    //NSURL *registerURL = [NSURL URLWithString:@"https://localhost:8080/register"];
+    //NSURL *registerURL = [NSURL URLWithString:@"https://localsocialapp.appspot.com/register"];
+    NSURL *registerURL = [NSURL URLWithString:@"http://localhost:8080/register"];
     
     NSMutableURLRequest *registerRequest = [NSMutableURLRequest requestWithURL:registerURL];
     registerRequest.HTTPMethod = @"POST";
     
-    //DEBUG: This is for debug purposes in simulator
-    //NSString *deviceToken = @"FE66489F304DC75B8D6E8200DFF8A456E8DAEACEC428B427E9518741C92C6660";
+    
+    //TODO: throw exception if token is null
     
     AppDelegate *delegate =  (AppDelegate*)[[UIApplication sharedApplication] delegate];
     NSString *deviceToken = [delegate deviceTokenString];
+    //DEBUG: This is for debug purposes in simulator
+    //NSString *deviceToken = @"FE66489F304DC75B8D6E8200DFF8A456E8DAEACEC428B427E9518741C92C6660";
     self.senderToken = deviceToken; //TODO: token is in appdelegate and here
+    
     NSString *registerBody = [NSString stringWithFormat:@"version=1&token=%@", deviceToken];
     
     registerRequest.HTTPBody = [registerBody dataUsingEncoding:NSUTF8StringEncoding];
@@ -218,9 +221,10 @@
     
     [self setLoadingViewVisible:YES];
     
-    //DEBUG: Change to debug server
     NSURL *messageURL = [NSURL URLWithString:@"https://localsocialapp.appspot.com/message"];
-    //NSURL *messageURL = [NSURL URLWithString:@"https://localhost:8080/message"];
+    
+    //DEBUG: Change to debug server
+    //NSURL *messageURL = [NSURL URLWithString:@"http://localhost:8080/message"];
     
     NSMutableURLRequest *messageRequest = [NSMutableURLRequest requestWithURL:messageURL];
     messageRequest.HTTPMethod = @"POST";
@@ -282,8 +286,8 @@
     
     if (connection == self.sendMessageConnection)
     {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"Holler Success" delegate:self cancelButtonTitle:@"Continue" otherButtonTitles:nil];
-        [alert show];
+        //UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil message:@"Holler Success" delegate:self cancelButtonTitle:@"Continue" otherButtonTitles:nil];
+        //[alert show];
     }
     
     [self setLoadingViewVisible:NO];
@@ -324,6 +328,8 @@
     }
     
     //start location events
+    //TODO: start using less battery sucker version of location manager
+    
     if (nil == self.locationManager)
         self.locationManager = [[CLLocationManager alloc] init];
     
@@ -337,13 +343,6 @@
     [self.info addTarget:self action:@selector(showInfo:) forControlEvents:UIControlEventTouchUpInside];
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.info];
     
-    //close keyboard button
-    /*
-    self.done = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-    self.done.frame = CGRectMake(0, 0, 60, 20);
-    [self.done setTitle:@"Done" forState:UIControlStateNormal];
-    [self.done addTarget:self action:@selector(closeKeyboard:) forControlEvents:UIControlEventTouchUpInside];
-    */
 }
 
 - (void)viewDidUnload

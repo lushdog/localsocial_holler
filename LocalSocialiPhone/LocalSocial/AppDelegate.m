@@ -9,11 +9,6 @@
 #import "AppDelegate.h"
 #import "SendMessageViewController.h"
 
-//TODO: 
-//      limit characters to max amount TBD and possibly stop certain key presses
-//      handle rotate
-//      done button on textview keyboard putting /n is dumb
-
 
 @implementation AppDelegate
 
@@ -59,7 +54,8 @@
             message = [alert objectForKey:@"body"];
         }
         if (alert) {
-            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Holler"
+            //TODO: if a ton of hollers coming in how can you do anything if the app is open?
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"New Holler!"
                                                                 message:message
                                                                delegate:self
                                                       cancelButtonTitle:@"Continue"
