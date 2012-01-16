@@ -14,19 +14,7 @@
 
 @implementation SendMessageViewController
 
-@synthesize text = __text;
-@synthesize send = __send;
-@synthesize tableView = __tableView;
-@synthesize activityIndicator = __activityIndicator;
-@synthesize loadingOverlay = __loadingOverlay;
-//@synthesize done = __done;
-@synthesize info = __info;
-@synthesize dataContainer = __dataContainer;
-@synthesize sendMessageConnection = __sendMessageConnection;
-@synthesize registerConnection = __registerConnection;
-@synthesize locationManager = __locationManager;
-@synthesize currentLocation = __currentLocation;
-@synthesize senderToken = __senderToken;
+@synthesize text, send, tableView, activityIndicator, loadingOverlay, info, dataContainer, sendMessageConnection, registerConnection, locationManager, currentLocation, senderToken;
 
 
 #pragma mark - Table View Stuff
@@ -57,7 +45,7 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
 {
     NSString *cellIdentifier = @"Cell";
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
+    UITableViewCell *cell = [self.tableView dequeueReusableCellWithIdentifier:cellIdentifier];
      
     if (cell == nil)
     {
@@ -229,7 +217,7 @@
     NSMutableURLRequest *messageRequest = [NSMutableURLRequest requestWithURL:messageURL];
     messageRequest.HTTPMethod = @"POST";
     
-    NSString *messageBody = [NSString stringWithFormat:@"version=1&msg=%@&location=%f,%f&token=%@",text, self.currentLocation.coordinate.latitude, self.currentLocation.coordinate.longitude, self.senderToken];
+    NSString *messageBody = [NSString stringWithFormat:@"version=1&msg=%@&location=%f,%f&token=%@", self.text, self.currentLocation.coordinate.latitude, self.currentLocation.coordinate.longitude, self.senderToken];
     
     messageRequest.HTTPBody = [messageBody dataUsingEncoding:NSUTF8StringEncoding];
     self.sendMessageConnection = [[NSURLConnection alloc] initWithRequest:messageRequest delegate:self];

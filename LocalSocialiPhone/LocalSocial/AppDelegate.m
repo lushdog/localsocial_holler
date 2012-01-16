@@ -8,14 +8,13 @@
 
 #import "AppDelegate.h"
 #import "SendMessageViewController.h"
+#import "MapViewController.h"
+#import "ViewMessageViewController.h"
 
 
 @implementation AppDelegate
 
-@synthesize window = _window;
-@synthesize navigationController = __rootViewController;
-@synthesize sendMessageViewController = __sendMessageViewController;
-@synthesize deviceTokenString = __deviceTokenString;
+@synthesize window, navigationController, tabBarController, sendMessageViewController, viewMessageViewController, mapViewController, deviceTokenString;
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
@@ -23,11 +22,13 @@
     
     // Override point for customization after application launch.
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-    
     self.sendMessageViewController = [[SendMessageViewController alloc] initWithNibName:@"SendMessageViewController" bundle:[NSBundle mainBundle]];
     self.navigationController = [[UINavigationController alloc] initWithRootViewController:self.sendMessageViewController];
-    
-    self.window.rootViewController = self.navigationController;
+    self.mapViewController = [[MapViewController alloc] initWithNibName:@"MapViewController" bundle:[NSBundle mainBundle]];
+    self.viewMessageViewController = [[ViewMessageViewController alloc] initWithNibName:@"ViewMessageViewController" bundle:[NSBundle mainBundle]];
+    self.tabBarController = [[UITabBarController alloc] init];
+    self.tabBarController.viewControllers = [NSArray arrayWithObjects: self.sendMessageViewController, self.mapViewController, self.viewMessageViewController, nil];
+    self.window.rootViewController = self.tabBarController;
     [self.window makeKeyAndVisible];
     return YES;
 }
