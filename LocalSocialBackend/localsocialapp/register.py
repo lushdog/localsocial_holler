@@ -31,11 +31,11 @@ class MainHandler(webapp.RequestHandler):
    		token = cgi.escape(self.request.get("token"))
    		
    		url = "https://go.urbanairship.com/api/device_tokens/" + token + "/"
-   		authentication = base64.b64encode("iIFovCvgQEa_9Q4lMIQCKA:RgYrsOWYS3aeR93O4wu9NQ")
+   		authentication = base64.b64encode("iIFovCvgQEa_9Q4lMIQCKA:mfi4p62CRjW1halaJ_Ur4A")
    		headers = {"Authorization" : "Basic " + authentication}
    		response = urlfetch.fetch(url, payload=None, method=urlfetch.PUT, headers=headers, allow_truncated=False, follow_redirects=True, deadline=None, validate_certificate=True)
-   		self.response.set_status(response.status_code)
-   		self.response.out = StringIO.StringIO(response.content)
+   		self.response.set_status(response.status_code) 
+   		self.response.out.write (response.content)
    		if int(response.status_code) > 400:
    			logging.info("Registration to UA failed, URL = %s, STATUS CODE = %s, REASON = %s", url, response.status_code, response.content)    	
 

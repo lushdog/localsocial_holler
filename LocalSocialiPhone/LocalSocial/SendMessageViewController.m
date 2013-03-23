@@ -106,7 +106,7 @@
 
 -(IBAction)sendText:(id)sender
 {
-    if (self.text.text == @"") return;
+    if ([self.text.text isEqualToString: @""]) return;
     
     [self.text resignFirstResponder];
      self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.info];
@@ -176,8 +176,8 @@
 -(void)registerToken
 {
     //DEBUG: Debug url
-    //NSURL *registerURL = [NSURL URLWithString:@"https://localsocialapp.appspot.com/register"];
-    NSURL *registerURL = [NSURL URLWithString:@"http://localhost:8080/register"];
+    NSURL *registerURL = [NSURL URLWithString:@"https://localsocialapp.appspot.com/register"];
+    //NSURL *registerURL = [NSURL URLWithString:@"http://localhost:8080/register"];
     
     NSMutableURLRequest *registerRequest = [NSMutableURLRequest requestWithURL:registerURL];
     registerRequest.HTTPMethod = @"POST";
@@ -217,7 +217,7 @@
     NSMutableURLRequest *messageRequest = [NSMutableURLRequest requestWithURL:messageURL];
     messageRequest.HTTPMethod = @"POST";
     
-    NSString *messageBody = [NSString stringWithFormat:@"version=1&msg=%@&location=%f,%f&token=%@", self.text, self.currentLocation.coordinate.latitude, self.currentLocation.coordinate.longitude, self.senderToken];
+    NSString *messageBody = [NSString stringWithFormat:@"version=1&msg=%@&location=%f,%f&token=%@", self.text.text, self.currentLocation.coordinate.latitude, self.currentLocation.coordinate.longitude, self.senderToken];
     
     messageRequest.HTTPBody = [messageBody dataUsingEncoding:NSUTF8StringEncoding];
     self.sendMessageConnection = [[NSURLConnection alloc] initWithRequest:messageRequest delegate:self];
